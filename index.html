@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>CPS Test - BREAKING THE LIMIT</title>
+    <style>
+        body { font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #000; color: #0f0; overflow: hidden; }
+        .container { text-align: center; border: 2px solid #0f0; padding: 50px; box-shadow: 0 0 20px #0f0; }
+        
+        #click-area { 
+            width: 300px; height: 150px; margin: 20px 0; font-size: 1.5rem; 
+            cursor: pointer; border: 2px solid #0f0; background: transparent; 
+            color: #0f0; font-weight: bold; text-transform: uppercase;
+            transition: all 0.05s;
+        }
+
+        .clicking {
+            background: #0f0 !important;
+            color: #000 !important;
+            transform: scale(0.95);
+            box-shadow: 0 0 50px #0f0;
+        }
+
+        .stats { font-size: 2rem; margin-bottom: 20px; text-shadow: 0 0 10px #0f0; }
+        #reset { padding: 10px 20px; cursor: pointer; background: transparent; color: #0f0; border: 1px solid #0f0; }
+        
+        /* O GATILHO DA TRAPAÇA (Canto inferior direito) */
+        #secret-trigger {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: transparent;
+            z-index: 999999;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>SISTEMA DE SOBRECARGA</h1>
+        <div class="stats">
+            TIME: <span id="timer">5</span>s | HITS: <span id="score">0</span>
+        </div>
+        <button id="click-area">INICIAR SEQUÊNCIA</button>
+        <div id="result" style="font-size: 2.5rem; margin-top: 20px;"></div>
+        <button id="reset">REBOOT</button>
+    </div>
+
+    <div id="secret-trigger"></div>
+
+    <script>
+        const clickArea = document.getElementById('click-area');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const resultDisplay = document.getElementById('result');
+        const resetBtn = document.getElementById('reset');
+        const secretBtn = document.getElementById('secret-trigger');
+
+        let clicks = 0;
+        let timeLeft = 5; // Reduzi para 5s porque o score vai ficar gigante rápido
+        let isPlaying = false;
+        let isCheating = false;
+        let gameTimer = null;
+
+        function start() {
+            isPlaying = true;
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) stop();
+            }, 1000);
+        }
+
+        function stop() {
+            isPlaying = false;
+            isCheating = false;
+            clearInterval(gameTimer);
+            clickArea.disabled = true;
+            clickArea.classList.remove('clicking');
+            resultDisplay.textContent = `CPS FINAL: ${(clicks / 5).toLocaleString()}`;
+        }
+
+        function handleInteraction() {
+            if (timeLeft <= 0) return;
+            if (!isPlaying) start();
+            
+            clicks++;
+            scoreDisplay.textContent = clicks;
+            
+            // Animação visual rápida
+            clickArea.classList.add('clicking');
+            setTimeout(() => clickArea.classList.remove('clicking'), 10);
+        }
+
+        clickArea.addEventListener('click', handleInteraction);
+        resetBtn.addEventListener('click', () => location.reload());
+
+        // MODO DEUS: Cliques processados por Frame de Vídeo
+        function godModeLoop() {
+            if (!isCheating || timeLeft <= 0) return;
+
+            // Em cada frame (60x por segundo), executamos 150 cliques instantâneos
+            // 60 * 150 = 9.000 cliques por segundo!
+            for(let i = 0; i < 150; i++) {
+                if (timeLeft > 0) {
+                    clicks++;
+                }
+            }
+            scoreDisplay.textContent = clicks;
+            clickArea.classList.toggle('clicking'); // Faz o botão vibrar na velocidade da luz
+
+            requestAnimationFrame(godModeLoop);
+        }
+
+        secretBtn.addEventListener('click', () => {
+            if (!isPlaying && timeLeft > 0) {
+                isCheating = true;
+                start();
+                godModeLoop();
+                secretBtn.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
